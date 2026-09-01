@@ -7,6 +7,11 @@
     "userInterfaceStyle": "light",
     "scheme": "whatcanicook",
     "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#F7F7F5"
+    },
     "ios": {
       "supportsTablet": true
     },

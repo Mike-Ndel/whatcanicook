@@ -12,6 +12,8 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS } from '../constants/colors';
 import { SUGGESTED_INGREDIENTS } from '../constants/ingredients';
+import { RECIPES } from '../constants/recipes';
+import { matchRecipes, formatMatchResults } from '../utils/recipeMatcher';
 import IngredientInput from '../components/IngredientInput';
 import IngredientChip from '../components/IngredientChip';
 import SuggestedIngredient from '../components/SuggestedIngredient';
@@ -65,7 +67,41 @@ export default function HomeScreen() {
       Alert.alert('Add some ingredients first', 'Tell us what you have so we know what to cook.');
       return;
     }
-    Alert.alert('Coming soon', 'Recipe matching will be available soon.');
+
+    // Match recipes against user ingredients
+    // Using a 50% minimum threshold - recipes need a strong match
+    // (at least 50% of recipe ingredients available)
+    const matches = matchRecipes(ingredients, RECIPES, 50);
+
+    if (matches.length === 0) {
+      Alert.alert(
+        'No strong matches found',
+        'Try adding ingredients that are more commonly used in recipes (like plantain, rice, eggs, beans, etc.)'
+      );
+      return;
+    }
+
+    // Format results for display
+    // For Phase 2A.1, we display in an alert with recipe names and match percentages
+    // Phase 2B will build the full recipe cards UI
+    let resultText = `Found ${matches.length} recipe${matches.length !== 1 ? 's' : ''}:\n\n`;
+
+    matches.slice(0, 5).forEach((result, index) => {
+      resultText += `${index + 1}. ${result.recipe.name}\n   ${result.matchPercentage}% match`;
+      if (result.missingIngredients.length > 0) {
+        resultText += `\n   Missing: ${result.missingIngredients.slice(0, 2).join(', ')}${result.missingIngredients.length > 2 ? '...' : ''}`;
+      }
+      resultText += '\n\n';
+    });
+
+    if (matches.length > 5) {
+      resultText += `...and ${matches.length - 5} more recipes`;
+    }
+
+    // Log detailed results for debugging
+    console.log('Recipe Match Results:', matches);
+
+    Alert.alert('Recipe Matches', resultText.trim());
   }
 
   const isSelected = (name) =>
